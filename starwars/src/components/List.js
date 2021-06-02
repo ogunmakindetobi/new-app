@@ -1,44 +1,53 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-export const List = (props) => {
-  // const fetchData = ([count, setCount] = useState(0));
+function Card(props) {
+  return (
+    <div className="card">
+      <h4>{props.characters.name}</h4>
+      <p>Height:{props.characters.height}</p>
+      <p>Birth Year:{props.characters.birth_year}</p>
+      <p>{props.characters.films.length} Films</p>
+    </div>
+  );
+}
 
-  // 1. Create a place to store our data
-  // name of the state --> people, function to update the state --> setPeople, initial value --> []
-  const [people, setPeople] = useState([]);
+function List() {
+  const [listCards, setListCards] = useState([]);
+  const [nextUrl, setNextUrl] = useState("");
 
-  useEffect(() => {
+  useEffect(function () {
     fetch("https://swapi.dev/api/people/")
       .then(function (response) {
         return response.json();
       })
       .then(function (data) {
-        // This is for Javascript:
-        // document.getElementById("count").innerText = JSON.stringify(data);
-        // For react:
-        setPeople(data.results);
+        console.log(data.results);
+        setListCards(data.results);
+        setNextUrl(data.next);
       });
   }, []);
 
-  console.log(people, "people");
+  function loadMore() {
+    fetch(nextUrl)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        setListCards([...listCards, ...data.results]);
+        setNextUrl(data.next);
+      });
+  }
 
   return (
-    <div>
-      <h1>Star wars catalog</h1>
-      <div id="card-container">
-        {people.map(function (element) {
-          return (
-            <div className="card">
-              <h1>{element.name}</h1>
-              <p>{element.height}</p>
-            </div>
-          );
+    <div className="List">
+      <div className="card-container">
+        {listCards.map(function (characters) {
+          return <Card characters={characters}></Card>;
         })}
       </div>
-
-      <div id="load-container">
-        <button id="loadmore">Load More...</button>
-      </div>
+      <button onClick={loadMore}>Load More</button>
     </div>
   );
-};
+}
+
+export default List;
